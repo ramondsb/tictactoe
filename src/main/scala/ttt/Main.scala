@@ -5,7 +5,7 @@ import scala.util.Random
 
 
 object Main extends App {
-  sealed trait Player
+  sealed trait Player { def cellType: CellType }
   final case class Human(cellType: CellType) extends Player
   final case class Machine(cellType: CellType) extends Player
 
@@ -58,15 +58,51 @@ object Main extends App {
   def printPreamble(): Unit = println("Hello, TicTacToe!")
 
   def validateAddress(board: Main.Board, address: Int): Boolean = {
-    // Range
-    // Cell not occupied
-     if (!Range.inclusive(0, 9).contains(address))  return false
+    if (!Range.inclusive(0, 9).contains(address))  return false
+    if (board(address) != Empty) return false
     true
+  }
+
+  def checkGameState(board: Main.Board, players: Seq[Player]): GameState = {
+    def allMatchHorizontal(board: Board, cellType: CellType): Boolean =
+      Seq(
+        Seq(0, 1, 2), // First horizontal from top to bottom
+        Seq(3, 4, 5), // Second vertical
+        Seq(6, 7, 8)  // Third vertical
+      ).exists(_.forall(i => board(i) == cellType))
+
+    def allMatchVertical(board: Board, cellType: CellType): Boolean =
+      Seq(
+        Seq(0, 3, 6), // First vertical from left to right
+        Seq(1, 4, 7), // Second vertical
+        Seq(2, 5, 7)  // Third vertical
+      ).exists(_.forall(i => board(i) == cellType))
+
+    def allDiagonals(board: Board, cellType: CellType): Boolean =
+      Seq(
+        Seq(0, 4, 8), // Main diagonal
+        Seq(6, 4, 2), // Second diagonal
+      ).exists(_.forall(i => board(i) == cellType))
+
+    val hasWinner = {
+      players.filter(p =>
+        (allMatchHorizontal(board, p.cellType) ||
+          allMatchVertical(board, p.cellType) ||
+          allDiagonals(board, p.cellType))
+      ).headOption
+    }
+
+    hasWinner
+      .map(p => Finished(Some(p)))
+      .getOrElse({
+        if (board.count(_ != Empty) >= 9)  Finished() else  OnGoing
+      })
   }
 
   var gameState: GameState = NotStarted
   var human: Human = Human(X)
   var computer: Machine = Machine(O)
+  val players: Seq[Player] = Seq(human, computer)
   var board: Board = Array(Empty)
   var currentTurn: Player = human
   var isGameOver: Boolean = false
@@ -80,43 +116,27 @@ object Main extends App {
         gameState = OnGoing
       }
       case OnGoing => {
-        printBoard(board)
-
-        val aMove = currentTurn match {
-          case Human(cell) => {
-            currentTurn = computer
-            println("Human turn...")
-            val address = readInt()
-            if (validateAddress(board, address)) {
-              Right(Move(address, cell))
-            } else Left("Invalid human address")
-          }
-          case Machine(cell) => {
-            println("Machine turn...")
-            currentTurn = human
-            nextMove(board, cell)
-          }
-        }
-
-        val result = aMove match {
-          case Left(errorMsg) => Left(errorMsg)
-          case Right(move) =>
-            applyMove(board, move) match {
-              case Left(errorMsg) => Left(errorMsg)
-              case Right(updatedBoard) => {
-                Right(updatedBoard)
-              }
+        for {
+          aMove <- currentTurn match {
+            case Human(cell) => {
+              currentTurn = computer
+              println("Human turn...")
+              val address = readInt()
+              if (validateAddress(board, address)) {
+                Right(Move(address, cell))
+              } else Left("Invalid human address")
             }
-        }
-
-        result match {
-          case Right(updatedBoard) => {
-            board = updatedBoard
-            // Check state for draw or victory
-            gameState
-            if (board.count(_ != Empty) >= 9) gameState = Finished() else  OnGoing
+            case Machine(cell) => {
+              println("Machine turn...")
+              currentTurn = human
+              nextMove(board, cell)
+            }
           }
-          case Left(errorMsg) => println(errorMsg)
+          updatedBoard <- applyMove(board, aMove)
+        } yield {
+          board = updatedBoard
+          printBoard(board)
+          gameState = checkGameState(board, players)
         }
       }
       case Finished(winner) => {
