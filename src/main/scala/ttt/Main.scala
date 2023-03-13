@@ -5,9 +5,32 @@ import scala.util.Random
 
 
 object Main extends App {
-  sealed trait Player { def cellType: CellType }
-  final case class Human(cellType: CellType) extends Player
-  final case class Machine(cellType: CellType) extends Player
+  sealed trait Player {
+    def cellType: CellType
+    def nextMove(board: Board): Either[String, Move]
+  }
+  final case class Human(cellType: CellType) extends Player {
+    def nextMove(board: Board): Either[String, Move] = {
+        val address = readInt()
+        if (validateAddress(board, address)) {
+          Right(Move(address, cellType))
+        } else Left("Invalid human address")
+    }
+  }
+  final case class Machine(cellType: CellType, random: Random) extends Player {
+    def nextMove(board: Board): Either[String, Move] = {
+        ai(board, cellType)(random)
+    }
+    private def ai(board: Board, cellType: CellType)(implicit rand: Random): Either[String, Move] = {
+      if (board.exists(_ == Empty)) {
+        var address = -1
+        do {
+          address = rand.nextInt(9)
+        } while (board(address) != Empty)
+        Right(Move(address , cellType))
+      } else Left("No more empty cells available")
+    }
+  }
 
   sealed trait GameState
   final case object NotStarted extends GameState
@@ -41,18 +64,10 @@ object Main extends App {
 
   // TODO: Check immutable structure to hold board
   def applyMove(board: Board, move: Move): Either[String, Board] = {
-    board(move.address) = move.cellType
-    Right(board)
-  }
-
-  def nextMove(board: Board, cellType: CellType)(implicit rand: Random): Either[String, Move] = {
-    if (board.exists(_ == Empty)) {
-      var address = -1
-      do {
-        address = rand.nextInt(9)
-      } while (board(address) != Empty)
-      Right(Move(address , cellType))
-    } else Left("No more empty cells available")
+    if (board(move.address) == Empty)  {
+      board(move.address) = move.cellType
+      Right(board)
+    } else Left("Non empty cell")
   }
 
   def printPreamble(): Unit = println("Hello, TicTacToe!")
@@ -87,7 +102,7 @@ object Main extends App {
 
   var gameState: GameState = NotStarted
   var human: Human = Human(X)
-  var computer: Machine = Machine(O)
+  var computer: Machine = Machine(O, randomGenerator)
   val players: Seq[Player] = Seq(human, computer)
   var board: Board = Array(Empty)
   var currentTurn: Player = human
@@ -102,20 +117,17 @@ object Main extends App {
         gameState = OnGoing
       }
       case OnGoing => {
-        for {
+        val process = for {
           aMove <- currentTurn match {
             case Human(cell) => {
               currentTurn = computer
               println("Human turn...")
-              val address = readInt()
-              if (validateAddress(board, address)) {
-                Right(Move(address, cell))
-              } else Left("Invalid human address")
+              human.nextMove(board)
             }
-            case Machine(cell) => {
+            case Machine(cell, _) => {
               println("Machine turn...")
               currentTurn = human
-              nextMove(board, cell)
+              computer.nextMove(board)
             }
           }
           updatedBoard <- applyMove(board, aMove)
@@ -124,11 +136,12 @@ object Main extends App {
           printBoard(updatedBoard)
           gameState = checkGameState(board, players)
         }
+        process.left.foreach(err => s"Some error: ${err}")
       }
       case Finished(winner) => {
         winner match {
           case Some(Human(_)) => println("Human won!")
-          case Some(Machine(_)) => println("Machine won!")
+          case Some(Machine(_, _)) => println("Machine won!")
           case None => println("Game draw!")
         }
         isGameOver = true
