@@ -136,7 +136,7 @@ object Main extends App {
           printBoard(updatedBoard)
           gameState = checkGameState(board, players)
         }
-        process.left.foreach(err => s"Some error: ${err}")
+        process.left.foreach(err => println(s"Some error: ${err}"))
       }
       case Finished(winner) => {
         winner match {
