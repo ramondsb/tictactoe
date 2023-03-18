@@ -53,16 +53,15 @@ object Main extends App {
         val process = for {
           aMove <- currentTurn match {
             case Human(cell) => {
-              currentTurn = computer
               println("Human turn...")
               human.nextMove(board)
             }
             case Machine(cell, _) => {
               println("Machine turn...")
-              currentTurn = human
               computer.nextMove(board)
             }
           }
+          _ <- Right({ currentTurn = if (currentTurn == computer) human else computer })
           updatedBoard <- applyMove(board, aMove)
           _ <- Right({
             board = updatedBoard
