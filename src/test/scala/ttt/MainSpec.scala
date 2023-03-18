@@ -1,6 +1,7 @@
 package ttt
 
-import ttt.Main.{Board, CellType, Empty, Finished, Human, Machine, O, X, checkGameState, randomGenerator}
+import ttt.Main.{checkGameState, randomGenerator}
+import ttt.TicTacToe.{Board, CellType, Empty, Finished, Human, Machine, O, X}
 
 class MainSpec extends munit.FunSuite {
     val players = Seq(Human(X), Machine(O, randomGenerator))
@@ -36,4 +37,6 @@ class MainSpec extends munit.FunSuite {
       val expected = Finished(None)
       assertEquals(obtained, expected)
     }
+
+  // TODO: Check error msg when human inputs a invalid address
 }
