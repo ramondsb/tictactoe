@@ -64,11 +64,12 @@ object Main extends App {
             }
           }
           updatedBoard <- applyMove(board, aMove)
-        } yield {
-          board = updatedBoard
-          printBoard(updatedBoard)
-          gameState = checkGameState(board, players)
-        }
+          _ <- Right({
+            board = updatedBoard
+            printBoard(updatedBoard)
+            gameState = checkGameState(board, players)
+          })
+        } yield ()
         process.left.foreach(err => println(s"Some error: ${err}"))
       }
       case Finished(winner) => {
