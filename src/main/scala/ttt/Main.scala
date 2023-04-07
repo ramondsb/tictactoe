@@ -40,7 +40,7 @@ object Main extends App {
   implicit val randomGenerator = new Random()
   var gameState: GameState = NotStarted
   var human: Human = Human(X)
-  var computer: Machine = Machine(O, randomGenerator)
+  var computer: Machine = Machine(O, new RandomAi(randomGenerator,O))
   val players: Seq[Player] = Seq(human, computer)
   var board: Board = Array(Empty)
   var currentTurn: Player = human

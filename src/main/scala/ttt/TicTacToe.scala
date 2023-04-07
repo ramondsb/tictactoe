@@ -18,18 +18,9 @@ object TicTacToe {
       } else Left("Invalid human address")
     }
   }
-  final case class Machine(cellType: CellType, random: Random) extends Player {
+  final case class Machine(cellType: CellType, ai: Ai) extends Player {
     def nextMove(board: Board): Either[String, Move] = {
-      ai(board, cellType)(random)
-    }
-    private def ai(board: Board, cellType: CellType)(implicit rand: Random): Either[String, Move] = {
-      if (board.exists(_ == Empty)) {
-        var address = -1
-        do {
-          address = rand.nextInt(9)
-        } while (board(address) != Empty)
-        Right(Move(address , cellType))
-      } else Left("No more empty cells available")
+      ai.nextMove(board, cellType)
     }
   }
 

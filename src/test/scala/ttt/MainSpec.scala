@@ -4,7 +4,8 @@ import ttt.Main.{checkGameState, randomGenerator}
 import ttt.TicTacToe.{Board, CellType, Empty, Finished, Human, Machine, O, X}
 
 class MainSpec extends munit.FunSuite {
-    val players = Seq(Human(X), Machine(O, randomGenerator))
+    val ai = new RandomAi(randomGenerator, O)
+    val players = Seq(Human(X), Machine(O, ai))
     test("row victory") {
       val board: Board = Array[CellType](
         X, X, X,
@@ -23,7 +24,7 @@ class MainSpec extends munit.FunSuite {
         O, Empty, Empty
       )
       val obtained = checkGameState(board, players)
-      val expected = Finished(Some(Machine(O, randomGenerator)))
+      val expected = Finished(Some(Machine(O, ai)))
       assertEquals(obtained, expected)
     }
 
