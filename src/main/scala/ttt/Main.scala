@@ -8,7 +8,12 @@ import scala.util.Random
 
 object Main extends App {
 
-  def printPreamble(): Unit = println("Hello, TicTacToe!")
+  def printPreamble(): Unit = println("""
+                                      |A tic-tac-toe game written in Scala!
+                                      |Board is enumerated from 0 to 8:
+                                      |0 1 2
+                                      |3 4 5
+                                      |6 7 8""".stripMargin)
 
   def checkGameState(board: Board, players: Seq[Player]): GameState = {
     def matchSomeWinCondition(board: Board, cellType: CellType): Boolean =
