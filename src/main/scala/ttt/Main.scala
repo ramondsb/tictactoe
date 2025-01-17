@@ -16,31 +16,20 @@ object Main extends App {
                                       |6 7 8""".stripMargin)
 
   def checkGameState(board: Board, players: Seq[Player]): GameState = {
-    def matchSomeWinCondition(board: Board, cellType: CellType): Boolean =
-      Seq(
-        Seq(0, 1, 2), // First row from top to bottom
-        Seq(3, 4, 5), // Second row
-        Seq(6, 7, 8), // Third row
-        Seq(0, 3, 6), // First column from left to right
-        Seq(1, 4, 7), // Second column
-        Seq(2, 5, 8), // column vertical
-        Seq(0, 4, 8), // Main diagonal
-        Seq(6, 4, 2), // Second diagonal
-      ).exists(_.forall(i => board(i) == cellType))
-
-    val maybeWinner = players.filter(p => matchSomeWinCondition(board, p.cellType)).headOption
-
+    // TODO: Replace with find method
+    val maybeWinner = players
+      .filter(p => Board.matchSomeWinCondition(board, p.cellType))
+      .headOption
     maybeWinner
       .map(p => Finished(Some(p)))
-      .getOrElse({
-        if (board.count(_ != Empty) >= 9)  Finished() else  OnGoing
-      })
+      .getOrElse({ if (Board.isFull(board)) Finished() else  OnGoing})
   }
 
   implicit val randomGenerator = new Random()
   var gameState: GameState = NotStarted
   var human: Human = Human(X)
-  var computer: Machine = Machine(O, new RandomAi(randomGenerator,O))
+  //var computer: Machine = Machine(O, new RandomAi(randomGenerator,O))
+  var computer: Machine = Machine(O, new Minmax2())
   val players: Seq[Player] = Seq(human, computer)
   var board: Board = Array(Empty)
   var currentTurn: Player = human

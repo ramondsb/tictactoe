@@ -66,5 +66,19 @@ object TicTacToe {
       if (board(address) != Empty) return false
       true
     }
+
+    def matchSomeWinCondition(board: Board, cellType: CellType): Boolean =
+      Seq(
+        Seq(0, 1, 2), // First row from top to bottom
+        Seq(3, 4, 5), // Second row
+        Seq(6, 7, 8), // Third row
+        Seq(0, 3, 6), // First column from left to right
+        Seq(1, 4, 7), // Second column
+        Seq(2, 5, 8), // column vertical
+        Seq(0, 4, 8), // Main diagonal
+        Seq(6, 4, 2), // Second diagonal
+      ).exists(_.forall(i => board(i) == cellType))
+
+    def isFull(board: Board): Boolean = if (board.count(_ != Empty) >= 9) true else false
   }
 }
