@@ -89,6 +89,16 @@ class MainSpec extends munit.FunSuite {
       X, E, O
     )
     val ans = ai.minmax(board, 9, false)
+    assertEquals(ans._2, TicTacToe.NoneMove)
+  }
+  test("7") {
+    val ai = new Minmax()
+    val board: Board = Array[CellType](
+      X, O, E,
+      E, E, E,
+      X, E, O
+    )
+    val ans = ai.minmax(board, 9, false)
     assertEquals(ans._2, TicTacToe.PlaceMove(3, O))
   }
 }

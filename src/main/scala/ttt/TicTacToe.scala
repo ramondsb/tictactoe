@@ -86,6 +86,6 @@ object TicTacToe {
         Seq(6, 4, 2), // Second diagonal
       ).exists(_.forall(i => board(i) == cellType))
 
-    def isFull(board: Board): Boolean = if (board.count(_ != E) >= 9) true else false
+    def isFull(board: Board): Boolean = if (board.count(_ != E) == 9) true else false
   }
 }
