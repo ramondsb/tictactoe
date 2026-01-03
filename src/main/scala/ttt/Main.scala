@@ -1,7 +1,7 @@
 package ttt
 
 import ttt.TicTacToe.Board.{applyMove, printBoard}
-import ttt.TicTacToe.{Board, CellType, Empty, Finished, GameState, Human, Machine, Move, NotStarted, O, OnGoing, Player, X}
+import ttt.TicTacToe.{Board, CellType, Empty, Finished, GameState, Human, Machine, PlaceMove, NotStarted, O, OnGoing, Player, X}
 
 import scala.util.Random
 
@@ -28,8 +28,8 @@ object Main extends App {
   implicit val randomGenerator = new Random()
   var gameState: GameState = NotStarted
   var human: Human = Human(X)
-  var computer: Machine = Machine(O, new RandomAi(randomGenerator,O))
-  // var computer: Machine = Machine(O, new Minmax())
+  //var computer: Machine = Machine(O, new RandomAi(randomGenerator,O))
+  var computer: Machine = Machine(O, new Minmax())
   val players: Seq[Player] = Seq(human, computer)
   var board: Board = Array(Empty)
   var currentTurn: Player = human

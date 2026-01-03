@@ -1,5 +1,6 @@
 package ttt
 
+import sun.invoke.empty.Empty
 import ttt.TicTacToe.Board.validateAddress
 
 import scala.io.StdIn.readInt
@@ -14,7 +15,7 @@ object TicTacToe {
     def nextMove(board: Board): Either[String, Move] = {
       val address = readInt()
       if (validateAddress(board, address)) {
-        Right(Move(address, cellType))
+        Right(PlaceMove(address, cellType))
       } else Left("Invalid human address")
     }
   }
@@ -40,7 +41,11 @@ object TicTacToe {
     override def toString = "_"
   }
 
-  case class Move(address: Int, cellType: CellType)
+  type - = Empty
+
+  trait Move
+  case class PlaceMove(address: Int, cellType: CellType) extends Move
+  case object NoneMove extends Move
 
   type Board = Array[CellType]
 
@@ -55,10 +60,12 @@ object TicTacToe {
     }
 
     def applyMove(board: Board, move: Move): Either[String, Board] = {
-      if (board(move.address) == Empty)  {
-        board(move.address) = move.cellType
-        Right(board)
-      } else Left("Non empty cell")
+      move match {
+        case PlaceMove(address, cellType) =>
+          board(address) = cellType
+          Right(board)
+        case _ => Left("No move")
+      }
     }
 
     def validateAddress(board: Board, address: Int): Boolean = {

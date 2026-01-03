@@ -1,7 +1,7 @@
 package ttt
 
 import ttt.Main.{checkGameState, randomGenerator}
-import ttt.TicTacToe.{Board, CellType, Empty, Finished, Human, Machine, O, X}
+import ttt.TicTacToe.{-, Board, CellType, Empty, Finished, Human, Machine, NoneMove, O, PlaceMove, X}
 
 class MainSpec extends munit.FunSuite {
     val ai = new RandomAi(randomGenerator, O)
@@ -40,4 +40,45 @@ class MainSpec extends munit.FunSuite {
     }
 
   // TODO: Check error msg when human inputs a invalid address
+  test("Ai2") {
+    val ai = new Minmax()
+    val board: Board = Array[CellType](
+      O, X, Empty,
+      X, O, X,
+      X, O, X
+    )
+    val ans = ai.minmax(board, 3, false)
+    assertEquals(ans._2, TicTacToe.PlaceMove(2, O))
+  }
+
+  test("Draw2") {
+    val ai = new Minmax()
+    val board: Board = Array[CellType](
+      O, X, O,
+      X, O, X,
+      X, O, X
+    )
+    val ans = ai.minmax(board, 3, true)
+    assertEquals(ans._2, TicTacToe.NoneMove)
+  }
+  test("4") {
+    val ai = new Minmax()
+    val board: Board = Array[CellType](
+      X, Empty, Empty,
+      Empty, X, Empty,
+      Empty, Empty, Empty
+    )
+    val ans = ai.minmax(board, 9, false)
+    assertEquals(ans._2, TicTacToe.PlaceMove(8, O))
+  }
+  test("5") {
+    val ai = new Minmax()
+    val board: Board = Array[CellType](
+      X, Empty, Empty,
+      Empty, X, Empty,
+      Empty, O, O
+    )
+    val ans = ai.minmax(board, 9, false)
+    assertEquals(ans._2, TicTacToe.PlaceMove(6, O))
+  }
 }

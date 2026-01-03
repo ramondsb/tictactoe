@@ -1,7 +1,6 @@
 package ttt
 
-import ttt.TicTacToe.Board.{isFull, matchSomeWinCondition}
-import ttt.TicTacToe.{Board, CellType, Empty, Human, Machine, Move, O, Player, X}
+import ttt.TicTacToe.{Board, -, CellType, Empty, Human, Machine, Move, NoneMove, O, PlaceMove, Player, X}
 
 import scala.util.Random
 
@@ -10,67 +9,64 @@ trait Ai {
 }
 
 class RandomAi(random: Random, cellType: CellType) extends Ai {
-  def nextMove(board: Board, cellType: CellType): Either[String, Move] = {
+  def nextMove(board: Board, cellType: CellType): Either[String, PlaceMove] = {
     ai(board, cellType)(random)
   }
 
-  private def ai(board: Board, cellType: CellType)(implicit rand: Random): Either[String, Move] = {
+  private def ai(board: Board, cellType: CellType)(implicit rand: Random): Either[String, PlaceMove] = {
     if (board.exists(_ == Empty)) {
       var address = -1
       do {
         address = rand.nextInt(9)
       } while (board(address) != Empty)
-      Right(Move(address, cellType))
+      Right(PlaceMove(address, cellType))
     } else Left("No more empty cells available")
   }
 }
 
-
 class Minmax extends Ai {
   override def nextMove(board: Board, cellType: CellType): Either[String, Move] = {
-    val candidates = genCandidates(board, cellType)
-    val bestCandidate = candidates.maxBy({
-      case (_, position) => minmax(position, 1, false, cellType)
-    })
-    Right(bestCandidate._1)
+    println("Minmax thinking...")
+    Right(minmax(board, 9, false)._2)
   }
-
-  private def minmax(board: Board, depth: Int, isMax: Boolean, cellType: CellType): Int = {
-    if (depth <= 0) {
-      return evaluate(board, cellType)
-    }
-    // Invert cellType
-    val invertedCellType = if (cellType == X) O else X
-    val candidates = genCandidates(board, invertedCellType)
-    if (isMax) {
-      candidates.map({ case (_, position) => minmax(position, depth - 1, !isMax, invertedCellType)}).max
-    } else {
-      candidates.map({ case (_, position) => minmax(position, depth - 1, !isMax, invertedCellType)}).min
-    }
-  }
-
-  private def genCandidates(board: Board, cellType: CellType): Seq[(Move, Board)] = {
-    board
-      .zipWithIndex
-      .filter(_._1 == Empty)
-      .map(i => {
-        val newPosition = board.clone()
-        newPosition(i._2) = cellType
-        val move = Move(i._2, cellType)
-        (move, newPosition)
-      })
-      .toSeq
-  }
-
-  private def evaluate(board: TicTacToe.Board, cellType: CellType): Int = {
-    // - Lost
-    // 0 Draw
-    // 1 Win
-    val humanCellType = if (cellType == X) O else X
-    (Board.matchSomeWinCondition(board, cellType), Board.matchSomeWinCondition(board, humanCellType)) match {
+  def evaluatePosition(board: TicTacToe.Board): Int = {
+    (Board.matchSomeWinCondition(board, X), Board.matchSomeWinCondition(board, O)) match {
       case (true, false) => 1
       case (false, true) => -1
       case _ => 0
+    }
+  }
+  def isOver(position: Board): Boolean = !position.exists(_ == Empty)
+  def nextPossiblePositions(board: TicTacToe.Board, cellType: CellType): Seq[(Board, Move)] = {
+    // Find an empty cell and place a mark
+    var positions = Seq.empty[(Board, Move)]
+    for (i <- 0 until 9) {
+      if (board(i) == Empty) {
+        val newPosition = board.clone()
+        newPosition(i) = cellType
+        positions =  ((newPosition, PlaceMove(i, cellType)) +: positions)
+      }
+    }
+    positions
+  }
+
+  def minmax(position: Board, depth: Int, isMaximizerTurn: Boolean): (Int, Move) = {
+    if (depth == 0 || isOver(position)) {
+      (evaluatePosition(position), NoneMove)
+    } else {
+      if (isMaximizerTurn) {
+        val states = nextPossiblePositions(position, X).map {
+          case (nextPostion, move) => (minmax(nextPostion, depth - 1, false), move)
+        }
+        val best = states.maxBy(_._1._1)
+        (best._1._1, best._2)
+      } else {
+        val states = nextPossiblePositions(position, O).map {
+          case (nextPosition, move) => (minmax(nextPosition, depth - 1, true), move)
+        }
+        val best = states.minBy(_._1._1)
+        (best._1._1, best._2)
+      }
     }
   }
 }
