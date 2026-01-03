@@ -37,7 +37,7 @@ object TicTacToe {
   final case object O extends CellType {
     override def toString = "O"
   }
-  final case object Empty extends CellType {
+  final case object E extends CellType {
     override def toString = "_"
   }
 
@@ -70,7 +70,7 @@ object TicTacToe {
 
     def validateAddress(board: Board, address: Int): Boolean = {
       if (!Range.inclusive(0, 8).contains(address))  return false
-      if (board(address) != Empty) return false
+      if (board(address) != E) return false
       true
     }
 
@@ -86,6 +86,6 @@ object TicTacToe {
         Seq(6, 4, 2), // Second diagonal
       ).exists(_.forall(i => board(i) == cellType))
 
-    def isFull(board: Board): Boolean = if (board.count(_ != Empty) >= 9) true else false
+    def isFull(board: Board): Boolean = if (board.count(_ != E) >= 9) true else false
   }
 }

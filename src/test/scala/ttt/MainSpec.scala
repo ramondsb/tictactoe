@@ -1,7 +1,7 @@
 package ttt
 
 import ttt.Main.{checkGameState, randomGenerator}
-import ttt.TicTacToe.{-, Board, CellType, Empty, Finished, Human, Machine, NoneMove, O, PlaceMove, X}
+import ttt.TicTacToe.{-, Board, CellType, E, Finished, Human, Machine, NoneMove, O, PlaceMove, X}
 
 class MainSpec extends munit.FunSuite {
     val ai = new RandomAi(randomGenerator, O)
@@ -10,7 +10,7 @@ class MainSpec extends munit.FunSuite {
       val board: Board = Array[CellType](
         X, X, X,
         O, X, O,
-        Empty, Empty, Empty
+        E, E, E
       )
       val obtained = checkGameState(board, players)
       val expected = Finished(Some(Human(X)))
@@ -21,7 +21,7 @@ class MainSpec extends munit.FunSuite {
       val board: Board = Array[CellType](
         O, X, X,
         O, X, O,
-        O, Empty, Empty
+        O, E, E
       )
       val obtained = checkGameState(board, players)
       val expected = Finished(Some(Machine(O, ai)))
@@ -43,7 +43,7 @@ class MainSpec extends munit.FunSuite {
   test("Ai2") {
     val ai = new Minmax()
     val board: Board = Array[CellType](
-      O, X, Empty,
+      O, X, E,
       X, O, X,
       X, O, X
     )
@@ -64,9 +64,9 @@ class MainSpec extends munit.FunSuite {
   test("4") {
     val ai = new Minmax()
     val board: Board = Array[CellType](
-      X, Empty, Empty,
-      Empty, X, Empty,
-      Empty, Empty, Empty
+      X, E, E,
+      E, X, E,
+      E, E, E
     )
     val ans = ai.minmax(board, 9, false)
     assertEquals(ans._2, TicTacToe.PlaceMove(8, O))
@@ -74,11 +74,21 @@ class MainSpec extends munit.FunSuite {
   test("5") {
     val ai = new Minmax()
     val board: Board = Array[CellType](
-      X, Empty, Empty,
-      Empty, X, Empty,
-      Empty, O, O
+      X, E, E,
+      E, X, E,
+      E, O, O
     )
     val ans = ai.minmax(board, 9, false)
     assertEquals(ans._2, TicTacToe.PlaceMove(6, O))
+  }
+  test("6") {
+    val ai = new Minmax()
+    val board: Board = Array[CellType](
+      X, O, X,
+      E, X, E,
+      X, E, O
+    )
+    val ans = ai.minmax(board, 9, false)
+    assertEquals(ans._2, TicTacToe.PlaceMove(3, O))
   }
 }

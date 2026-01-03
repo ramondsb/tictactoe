@@ -1,7 +1,7 @@
 package ttt
 
 import ttt.TicTacToe.Board.{applyMove, printBoard}
-import ttt.TicTacToe.{Board, CellType, Empty, Finished, GameState, Human, Machine, PlaceMove, NotStarted, O, OnGoing, Player, X}
+import ttt.TicTacToe.{Board, CellType, E, Finished, GameState, Human, Machine, PlaceMove, NotStarted, O, OnGoing, Player, X}
 
 import scala.util.Random
 
@@ -31,7 +31,7 @@ object Main extends App {
   //var computer: Machine = Machine(O, new RandomAi(randomGenerator,O))
   var computer: Machine = Machine(O, new Minmax())
   val players: Seq[Player] = Seq(human, computer)
-  var board: Board = Array(Empty)
+  var board: Board = Array(E)
   var currentTurn: Player = human
   var isGameOver: Boolean = false
 
@@ -40,7 +40,7 @@ object Main extends App {
   do {
     gameState match {
       case NotStarted => {
-        board = Array.fill(9)(Empty)
+        board = Array.fill(9)(E)
         gameState = OnGoing
       }
       case OnGoing => {

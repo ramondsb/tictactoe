@@ -1,6 +1,6 @@
 package ttt
 
-import ttt.TicTacToe.{Board, -, CellType, Empty, Human, Machine, Move, NoneMove, O, PlaceMove, Player, X}
+import ttt.TicTacToe.{Board, -, CellType, E, Human, Machine, Move, NoneMove, O, PlaceMove, Player, X}
 
 import scala.util.Random
 
@@ -14,11 +14,11 @@ class RandomAi(random: Random, cellType: CellType) extends Ai {
   }
 
   private def ai(board: Board, cellType: CellType)(implicit rand: Random): Either[String, PlaceMove] = {
-    if (board.exists(_ == Empty)) {
+    if (board.exists(_ == E)) {
       var address = -1
       do {
         address = rand.nextInt(9)
-      } while (board(address) != Empty)
+      } while (board(address) != E)
       Right(PlaceMove(address, cellType))
     } else Left("No more empty cells available")
   }
@@ -36,12 +36,12 @@ class Minmax extends Ai {
       case _ => 0
     }
   }
-  def isOver(position: Board): Boolean = !position.exists(_ == Empty)
+  def isOver(position: Board): Boolean = !position.exists(_ == E)
   def nextPossiblePositions(board: TicTacToe.Board, cellType: CellType): Seq[(Board, Move)] = {
     // Find an empty cell and place a mark
     var positions = Seq.empty[(Board, Move)]
     for (i <- 0 until 9) {
-      if (board(i) == Empty) {
+      if (board(i) == E) {
         val newPosition = board.clone()
         newPosition(i) = cellType
         positions =  ((newPosition, PlaceMove(i, cellType)) +: positions)
@@ -51,7 +51,7 @@ class Minmax extends Ai {
   }
 
   def minmax(position: Board, depth: Int, isMaximizerTurn: Boolean): (Int, Move) = {
-    if (depth == 0 || isOver(position)) {
+    if (depth == 0 || isOver(position) || Board.matchSomeWinCondition(position, X) || Board.matchSomeWinCondition(position, O)) {
       (evaluatePosition(position), NoneMove)
     } else {
       if (isMaximizerTurn) {
